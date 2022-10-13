@@ -1,5 +1,3 @@
-from operator import le
-from re import T
 import pygame
 from debug import debug 
 from settings import *
@@ -13,14 +11,13 @@ class Player_Goku(pygame.sprite.Sprite):
         self.pos_y = 200
         self.image = pygame.image.load('graphics/Goku/standing/standing_0.png').convert_alpha()
         self.rect = self.image.get_rect(midbottom = (self.pos_x,self.pos_y))
-        self.gravity = 0
+        self.gravity = 1
         
         # graphics setup
         self.import_player_assets()
         self.status = 'idle'
         self.frame_index = 0
         self.animation_speed = 0.17
-        
         
         # movement
         self.direction = pygame.math.Vector2()
@@ -29,6 +26,8 @@ class Player_Goku(pygame.sprite.Sprite):
         self.jumping = False
         self.jump_cooldown = 2000
         self.jump_time = None
+        self.jump_height = 20
+        self.y_velocity = self.jump_height
         # walk
         self.walk = False
 
@@ -66,32 +65,30 @@ class Player_Goku(pygame.sprite.Sprite):
 
         # jump
         if keys[pygame.K_SPACE] and self.pos_y >= 200 and not self.jumping :
-            self.create_jump()
-            self.jumping = True
-            self.jump_time = pygame.time.get_ticks()
-            
-            
+                self.jumping = True
+                self.create_jump()
+                self.jump_time = pygame.time.get_ticks()
+                debug(self.jumping)
+           
         # powerup
         if keys[pygame.K_s] and not self.walk:
-                self.status = 'powerup' 
-                self.direction.x = -2
-                debug(self.direction.x,self.direction.y)
+            self.status = 'powerup' 
+            self.direction.x = -2
+            debug(self.direction.x,self.direction.y)
 
     def create_jump(self):
         self.direction.y = 1
         self.gravity -= 20
         self.status = 'jump' 
-        
-
+      
     def apply_gravity(self):
-        self.gravity += 0.9
+        self.gravity += 1
         self.pos_y += self.gravity
         if self.pos_y  >= 200:
             self.pos_y  = 200
             self.direction.y = 0
             self.jumping = False # fix later
-
-    
+            
     def get_status(self):
         # idle status
         if self.direction.x == 0 and self.direction.y == 0:
@@ -101,16 +98,13 @@ class Player_Goku(pygame.sprite.Sprite):
                 self.status = 'powerup'
         elif self.direction.y == 1: # to kept jump_3 animation in air
             self.status = 'jump'
-       
-            
-                
-
+          
     def cooldowns(self):
         current_time = pygame.time.get_ticks()
 
         if self.jumping:
             if current_time - self.jump_time >= self.jump_cooldown:
-                self.jumping = False
+                self.jumping = True
 
 
     def animate(self):
